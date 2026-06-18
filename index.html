@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ツアマス カード配列記録</title>
+  <style>
+    body { font-family: "Helvetica Neue", Arial, sans-serif; margin: 20px; background: #f9f9f9; }
+    h1 { text-align: center; }
+    .controls { text-align: center; margin: 20px 0; }
+    select, button { padding: 8px 12px; font-size: 16px; margin: 5px; }
+    .card-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }
+    .card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .card img { width: 100%; border-radius: 6px; }
+    .position { font-size: 18px; font-weight: bold; color: #0066cc; }
+  </style>
+</head>
+<body>
+  <h1>ツアマス カード出現順 記録</h1>
+  
+  <div class="controls">
+    <select id="segment">
+      <option value="1">1段目</option>
+      <option value="2">2段目</option>
+      <option value="3">3段目</option>
+      <!-- 必要に応じて追加 -->
+    </select>
+    
+    <label><input type="radio" name="frame" value="normal" checked> 通常枠</label>
+    <label><input type="radio" name="frame" value="rFrame"> R枠</label>
+    
+    <button onclick="loadData()">表示更新</button>
+  </div>
+
+  <div id="result" class="card-list"></div>
+
+  <script>
+    let data = {};
+
+    async function loadData() {
+      try {
+        const res = await fetch('data.json');
+        data = await res.json();
+        
+        const segment = document.getElementById('segment').value;
+        const frame = document.querySelector('input[name="frame"]:checked').value;
+        
+        const list = data.segments[segment]?.[frame] || [];
+        
+        let html = '';
+        list.forEach(item => {
+          html += `
+            <div class="card">
+              <div class="position">位置 ${item.position}</div>
+              <p><strong>${item.idol}</strong></p>
+              <p>${item.cardName}</p>
+              ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.cardName}">` : ''}
+              ${item.memo ? `<p><small>メモ: ${item.memo}</small></p>` : ''}
+            </div>`;
+        });
+        
+        document.getElementById('result').innerHTML = html || '<p>データがありません</p>';
+      } catch(e) {
+        alert('data.jsonの読み込みに失敗しました');
+      }
+    }
+
+    // ページ読み込み時に自動表示
+    window.onload = loadData;
+  </script>
+</body>
+</html>

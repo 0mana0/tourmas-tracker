@@ -4,26 +4,35 @@
     "5": {
       "normal": {
         "providerA": {
-          "name": "データソース1 (https://x.com/doragongaogao/status/2047177290325610722)",
+          "name": "データソース1 <!--(https://x.com/doragongaogao/status/2047177290325610722) -->",
           "cards": [
             {
               "position": 1,
               "idol": "伊吹翼",
               "cardName": "フルーツパーティ！",
-              "cardId": "IMT-001",
-              "rarity": "N",
               "imageUrl": "https://bandainamco-am.co.jp/am/vg/idolmaster-tours/images/cardlist/cards/0587.webp",
-              "memo": ""
             },
             {
               "position": 2,
               "idol": "星井美希",
               "cardName": "フルーツパーティ！",
               "cardId": "",
-              "rarity": "N",
               "imageUrl": "https://bandainamco-am.co.jp/am/vg/idolmaster-tours/images/cardlist/cards/0582.webp",
-              "memo": ""
-            }
+            },
+            {
+              "position": 3,
+              "idol": "硲道夫",
+              "cardName": "ブレイクタイム",
+              "cardId": "",
+              "imageUrl": "https://bandainamco-am.co.jp/am/vg/idolmaster-tours/images/cardlist/cards/0575.webp",
+            },
+            {
+              "position": 4,
+              "idol": "八宮めぐる",
+              "cardName": "フルーツパーティ！",
+              "cardId": "",
+              "imageUrl": "https://bandainamco-am.co.jp/am/vg/idolmaster-tours/images/cardlist/cards/0593.webp",
+            },
           ]
         },
         "providerB": {

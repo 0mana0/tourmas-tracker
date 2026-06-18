@@ -22,7 +22,30 @@
           "memo": ""
         }
       ],
-      "rFrame": []
+      "rFrame": [] 
+    }
+    "5": {
+      "normal": [
+        {
+          "position": 1,
+          "idol": "伊吹翼",
+          "cardName": "フルーツパーティ！",
+          "cardId": "IMT-001",
+          "rarity": "N",
+          "imageUrl": "https://bandainamco-am.co.jp/am/vg/idolmaster-tours/images/cardlist/cards/0587.webp",
+          "memo": "テスト用メモ"
+        },
+        {
+          "position": 2,
+          "idol": "風野灯織",
+          "cardName": "カード名を入力",
+          "cardId": "",
+          "rarity": "",
+          "imageUrl": "",
+          "memo": ""
+        }
+      ],
+      "rFrame": [] 
     }
   }
 }

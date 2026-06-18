@@ -3,72 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ツアマス カード配列記録</title>
+  <title>ツアマス カード出現順 記録</title>
   <style>
-    body { font-family: "Helvetica Neue", Arial, sans-serif; margin: 20px; background: #f9f9f9; }
-    h1 { text-align: center; }
-    .controls { text-align: center; margin: 20px 0; }
-    select, button { padding: 8px 12px; font-size: 16px; margin: 5px; }
-    .card-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }
-    .card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .card img { width: 100%; border-radius: 6px; }
-    .position { font-size: 18px; font-weight: bold; color: #0066cc; }
+    body { font-family: "Helvetica Neue", Arial, "Hiragino Sans", "Meiryo", sans-serif; margin: 20px; background: #f9f9f9; color: #333; }
+    h1 { text-align: center; color: #2c3e50; }
+    .controls { text-align: center; margin: 25px 0; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    select, button { padding: 10px 15px; font-size: 16px; margin: 5px; border-radius: 6px; }
+    button { background: #3498db; color: white; border: none; cursor: pointer; }
+    button:hover { background: #2980b9; }
+
+    .section { 
+      margin: 40px 0; 
+      padding: 20px; 
+      background: white; 
+      border-radius: 10px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .provider-name { 
+      font-size: 22px; 
+      font-weight: bold; 
+      color: #2c3e50; 
+      border-bottom: 2px solid #3498db; 
+      padding-bottom: 8px; 
+      margin-bottom: 20px;
+    }
+    .card-list { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+      gap: 20px; 
+    }
+    .card { 
+      background: #fff; 
+      border: 1px solid #ddd; 
+      border-radius: 10px; 
+      padding: 15px; 
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .card img { width: 100%; border-radius: 8px; margin-top: 10px; }
+    .position { font-size: 20px; font-weight: bold; color: #e74c3c; }
   </style>
 </head>
 <body>
   <h1>ツアマス カード出現順 記録</h1>
 
   <div class="controls">
+    <label>弾選択：</label>
     <select id="segment">
       <option value="1">第一弾</option>
       <option value="2">第二弾</option>
       <option value="3">第三弾</option>
       <option value="4">第四弾</option>
       <option value="5">第五弾</option>
-      <!-- 必要に応じて追加 -->
     </select>
-  
     
     <label><input type="radio" name="frame" value="normal" checked> 通常枠</label>
     <label><input type="radio" name="frame" value="rFrame"> R枠</label>
     
-    <button onclick="loadData()">表示更新</button>
+    <button onclick="loadData()">表示を更新</button>
   </div>
 
-  <div id="result" class="card-list"></div>
+  <div id="result"></div>
 
   <script>
-    let data = {};
-
     async function loadData() {
       try {
-        const res = await fetch('data.json');
-        data = await res.json();
+        const res = await fetch('data.json?' + Date.now());
+        const data = await res.json();
         
         const segment = document.getElementById('segment').value;
         const frame = document.querySelector('input[name="frame"]:checked').value;
         
-        const list = data.segments[segment]?.[frame] || [];
+        const segmentData = data.segments[segment]?.[frame] || {};
         
-        let html = '';
-        list.forEach(item => {
-          html += `
-            <div class="card">
-              <div class="position">位置 ${item.position}</div>
-              <p><strong>${item.idol}</strong></p>
-              <p>${item.cardName}</p>
-              ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.cardName}">` : ''}
-              ${item.memo ? `<p><small>メモ: ${item.memo}</small></p>` : ''}
-            </div>`;
+        let html = `<h2 style="text-align:center;">${segment}弾 - ${frame === 'normal' ? '通常枠' : 'R枠'}</h2>`;
+
+        Object.keys(segmentData).forEach(providerKey => {
+          const provider = segmentData[providerKey];
+          html += `<div class="section">`;
+          html += `<div class="provider-name">${provider.name}</div>`;
+          
+          let cardsHtml = '';
+          (provider.cards || []).forEach(item => {
+            cardsHtml += `
+              <div class="card">
+                <div class="position">位置 ${item.position}</div>
+                <p><strong>${item.idol || '未登録'}</strong></p>
+                <p>${item.cardName || 'カード名未入力'}</p>
+                ${item.cardId ? `<p><small>ID: ${item.cardId}</small></p>` : ''}
+                ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.cardName}">` : ''}
+                ${item.memo ? `<p style="font-size:0.9em;color:#666;">メモ: ${item.memo}</p>` : ''}
+              </div>`;
+          });
+          
+          html += `<div class="card-list">${cardsHtml || '<p>この提供者のデータはありません</p>'}</div>`;
+          html += `</div>`;
         });
-        
-        document.getElementById('result').innerHTML = html || '<p>データがありません</p>';
+
+        document.getElementById('result').innerHTML = html || '<p style="text-align:center;">データがありません</p>';
       } catch(e) {
-        alert('data.jsonの読み込みに失敗しました');
+        document.getElementById('result').innerHTML = '<p style="color:red;text-align:center;">data.jsonの読み込みに失敗しました</p>';
       }
     }
 
-    // ページ読み込み時に自動表示
     window.onload = loadData;
   </script>
 </body>

@@ -4,43 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ツアマス カード出現順 記録</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
-    body { font-family: "Helvetica Neue", Arial, "Hiragino Sans", "Meiryo", sans-serif; margin: 20px; background: #f9f9f9; color: #333; }
+    body { font-family: "Helvetica Neue", Arial, "Hiragino Sans", Meiryo, sans-serif; margin: 20px; background: #f9f9f9; }
     h1 { text-align: center; color: #2c3e50; }
     .controls { text-align: center; margin: 25px 0; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     select, button { padding: 10px 15px; font-size: 16px; margin: 5px; border-radius: 6px; }
     button { background: #3498db; color: white; border: none; cursor: pointer; }
     button:hover { background: #2980b9; }
 
-    .section { 
-      margin: 40px 0; 
-      padding: 20px; 
-      background: white; 
-      border-radius: 10px; 
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .provider-name { 
-      font-size: 22px; 
-      font-weight: bold; 
-      color: #2c3e50; 
-      border-bottom: 2px solid #3498db; 
-      padding-bottom: 8px; 
-      margin-bottom: 20px;
-    }
-    .card-list { 
-      display: grid; 
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-      gap: 20px; 
-    }
-    .card { 
-      background: #fff; 
-      border: 1px solid #ddd; 
-      border-radius: 10px; 
-      padding: 15px; 
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
+    .section { margin: 35px 0; padding: 25px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .provider-name { font-size: 24px; font-weight: bold; color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; margin-bottom: 20px; }
+    .card-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .card { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 15px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); }
     .card img { width: 100%; border-radius: 8px; margin-top: 10px; }
-    .position { font-size: 20px; font-weight: bold; color: #e74c3c; }
+    .position { font-size: 21px; font-weight: bold; color: #e74c3c; }
   </style>
 </head>
 <body>
@@ -56,8 +34,8 @@
       <option value="5">第五弾</option>
     </select>
     
-    <label><input type="radio" name="frame" value="normal" checked> 通常枠</label>
-    <label><input type="radio" name="frame" value="rFrame"> R枠</label>
+    <label><input type="radio" name="frame" value="N" checked> 通常枠</label>
+    <label><input type="radio" name="frame" value="R"> R枠</label>
     
     <button onclick="loadData()">表示を更新</button>
   </div>
@@ -65,43 +43,67 @@
   <div id="result"></div>
 
   <script>
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0dObXqhwdvRm0JObB56gVIby5kmWpqwT5TQGKvtTyQgcPq90rZVYokwUosAZvRJ-PABc8JbGW3N0z/pub?gid=0&single=true&output=csv";  // ← ここを変更！
+
     async function loadData() {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = "<p>読み込み中...</p>";
+
       try {
-        const res = await fetch('data.json?' + Date.now());
-        const data = await res.json();
-        
-        const segment = document.getElementById('segment').value;
-        const frame = document.querySelector('input[name="frame"]:checked').value;
-        
-        const segmentData = data.segments[segment]?.[frame] || {};
-        
-        let html = `<h2 style="text-align:center;">${segment}弾 - ${frame === 'normal' ? '通常枠' : 'R枠'}</h2>`;
+        const response = await fetch(SHEET_URL);
+        const csvText = await response.text();
 
-        Object.keys(segmentData).forEach(providerKey => {
-          const provider = segmentData[providerKey];
-          html += `<div class="section">`;
-          html += `<div class="provider-name">${provider.name}</div>`;
-          
-          let cardsHtml = '';
-          (provider.cards || []).forEach(item => {
-            cardsHtml += `
-              <div class="card">
-                <div class="position">位置 ${item.position}</div>
-                <p><strong>${item.idol || '未登録'}</strong></p>
-                <p>${item.cardName || 'カード名未入力'}</p>
-                ${item.cardId ? `<p><small>ID: ${item.cardId}</small></p>` : ''}
-                ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.cardName}">` : ''}
-                ${item.memo ? `<p style="font-size:0.9em;color:#666;">メモ: ${item.memo}</p>` : ''}
-              </div>`;
-          });
-          
-          html += `<div class="card-list">${cardsHtml || '<p>この提供者のデータはありません</p>'}</div>`;
-          html += `</div>`;
+        Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(results) {
+            const data = results.data;
+            const segment = document.getElementById('segment').value;
+            const frame = document.querySelector('input[name="frame"]:checked').value;
+
+            // フィルタリング
+            const filtered = data.filter(row => 
+              row.segment === segment && 
+              row.frame === frame &&
+              row.provider && row.position
+            );
+
+            // 提供者ごとにグループ化
+            const grouped = {};
+            filtered.forEach(row => {
+              if (!grouped[row.provider]) {
+                grouped[row.provider] = { name: row.provider, cards: [] };
+              }
+              grouped[row.provider].cards.push(row);
+            });
+
+            let html = `<h2 style="text-align:center;">${segment}弾 - ${frame === 'normal' ? '通常枠' : 'R枠'}</h2>`;
+
+            Object.values(grouped).forEach(provider => {
+              html += `<div class="section">`;
+              html += `<div class="provider-name">${provider.name}</div>`;
+              html += `<div class="card-list">`;
+
+              provider.cards.forEach(card => {
+                html += `
+                  <div class="card">
+                    <div class="position">位置 ${card.position}</div>
+                    <p><strong>${card.idol || '未登録'}</strong></p>
+                    <p>${card.cardName || '---'}</p>
+                    ${card.cardId ? `<p><small>ID: ${card.cardId}</small></p>` : ''}
+                    ${card.imageUrl ? `<img src="${card.imageUrl}" alt="${card.cardName}">` : ''}
+                    ${card.memo ? `<p style="font-size:0.9em;color:#555;">メモ: ${card.memo}</p>` : ''}
+                  </div>`;
+              });
+
+              html += `</div></div>`;
+            });
+
+            resultDiv.innerHTML = html || "<p>該当データがありません</p>";
+          }
         });
-
-        document.getElementById('result').innerHTML = html || '<p style="text-align:center;">データがありません</p>';
       } catch(e) {
-        document.getElementById('result').innerHTML = '<p style="color:red;text-align:center;">data.jsonの読み込みに失敗しました</p>';
+        resultDiv.innerHTML = "<p style='color:red;'>エラー：スプレッドシートの読み込みに失敗しました</p>";
       }
     }
 

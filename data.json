@@ -1,0 +1,28 @@
+{
+  "lastUpdated": "2026-06-16",
+  "segments": {
+    "1": {
+      "normal": [
+        {
+          "position": 1,
+          "idol": "櫻木真乃",
+          "cardName": "［ツアーズレア］はじまりのメロディ",
+          "cardId": "IMT-001",
+          "rarity": "SR",
+          "imageUrl": "",
+          "memo": "テスト用メモ"
+        },
+        {
+          "position": 2,
+          "idol": "風野灯織",
+          "cardName": "カード名を入力",
+          "cardId": "",
+          "rarity": "",
+          "imageUrl": "",
+          "memo": ""
+        }
+      ],
+      "rFrame": []
+    }
+  }
+}
